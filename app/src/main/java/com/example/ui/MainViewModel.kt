@@ -86,6 +86,29 @@ class MainViewModel(private val repository: PetRepository) : ViewModel() {
         }
     }
 
+    fun toggleCollaborativeActive(enabled: Boolean) {
+        viewModelScope.launch {
+            repository.updateSettings { it.copy(isCollaborativeActive = enabled) }
+        }
+    }
+
+    fun updateCollaborativePet(petId: String) {
+        viewModelScope.launch {
+            repository.updateSettings { it.copy(collaborativePetId = petId) }
+        }
+    }
+
+    fun triggerCollaborativeScenario(scenario: String) {
+        viewModelScope.launch {
+            repository.updateSettings { 
+                it.copy(
+                    lastInteractionScenario = scenario,
+                    lastInteractionTimeMillis = System.currentTimeMillis()
+                )
+            }
+        }
+    }
+
     fun addReminder(text: String) {
         viewModelScope.launch {
             repository.addReminder(text)

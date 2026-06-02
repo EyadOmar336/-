@@ -16,5 +16,9 @@ data class PetSettings(
     val shortcutApp1: String? = null,
     val shortcutApp2: String? = null,
     val shortcutApp3: String? = null,
-    val isGameModeEnabled: Boolean = true
+    val isGameModeEnabled: Boolean = true,
+    val isCollaborativeActive: Boolean = false,
+    val collaborativePetId: String = "panda",
+    val lastInteractionScenario: String? = null,
+    val lastInteractionTimeMillis: Long = 0L
 )

@@ -63,6 +63,7 @@ fun PetCanvas(
             "astro" -> drawAstro(cx, cy, r, state, activeTick)
             "kage" -> drawKage(cx, cy, r, state, activeTick)
             "rex" -> drawRex(cx, cy, r, state, activeTick)
+            "panda" -> drawPanda(cx, cy, r, state, activeTick)
             else -> drawMochi(cx, cy, r, state, activeTick)
         }
     }
@@ -575,4 +576,108 @@ private fun DrawScope.drawRex(
             cornerRadius = CornerRadius(5f, 5f)
         )
     }
+}
+
+// -------------------------------------------------------------
+// 5. PANDA (DRAWING LOGIC)
+// -------------------------------------------------------------
+private fun DrawScope.drawPanda(
+    cx: Float,
+    cy: Float,
+    r: Float,
+    state: PetState,
+    tick: Int
+) {
+    val pandaWhite = Color(0xFFFFFFFF)
+    val pandaBlack = Color(0xFF1E1E1E)
+    val pandaPink = Color(0xFFFFB6C1)
+
+    val walkWaddle = if (state == PetState.WALKING) sin(tick * 0.5f) * 6f else 0f
+    val currentCy = cy + if (state == PetState.SLEEPING) r * 0.15f else walkWaddle
+
+    // 1. Shadow underneath
+    drawOval(
+        color = Color(0x33000000),
+        topLeft = Offset(cx - r * 1.0f, cy + r * 0.7f),
+        size = Size(r * 2.0f, r * 0.3f)
+    )
+
+    // 2. Ears (Panda black ears on top corners of the head)
+    drawCircle(pandaBlack, radius = r * 0.3f, center = Offset(cx - r * 0.65f, currentCy - r * 0.65f))
+    drawCircle(pandaBlack, radius = r * 0.3f, center = Offset(cx + r * 0.65f, currentCy - r * 0.65f))
+
+    // 3. Body (Panda body black and white parts)
+    drawRoundRect(
+        color = pandaBlack,
+        topLeft = Offset(cx - r * 0.7f, currentCy - r * 0.1f),
+        size = Size(r * 1.4f, r * 0.85f),
+        cornerRadius = CornerRadius(r * 0.4f, r * 0.4f)
+    )
+    drawCircle(
+        color = pandaWhite,
+        radius = r * 0.5f,
+        center = Offset(cx, currentCy + r * 0.35f)
+    )
+
+    // 4. Head (Big white round cute face)
+    drawCircle(
+        color = pandaWhite,
+        radius = r * 0.75f,
+        center = Offset(cx, currentCy - r * 0.1f)
+    )
+
+    // 5. Black eye patches (Distinct panda shape!)
+    rotate(degrees = -10f, pivot = Offset(cx - r * 0.35f, currentCy - r * 0.15f)) {
+        drawOval(
+            color = pandaBlack,
+            topLeft = Offset(cx - r * 0.55f, currentCy - r * 0.3f),
+            size = Size(r * 0.4f, r * 0.3f)
+        )
+    }
+    rotate(degrees = 10f, pivot = Offset(cx + r * 0.35f, currentCy - r * 0.15f)) {
+        drawOval(
+            color = pandaBlack,
+            topLeft = Offset(cx + r * 0.15f, currentCy - r * 0.3f),
+            size = Size(r * 0.4f, r * 0.3f)
+        )
+    }
+
+    // 6. Eyes (Shining white or sleeping curves inside the black patches)
+    if (state == PetState.SLEEPING) {
+        drawArc(
+            color = pandaWhite, startAngle = 0f, sweepAngle = 180f, useCenter = false,
+            topLeft = Offset(cx - r * 0.45f, currentCy - r * 0.22f), size = Size(r * 0.2f, r * 0.12f),
+            style = Stroke(3f)
+        )
+        drawArc(
+            color = pandaWhite, startAngle = 0f, sweepAngle = 180f, useCenter = false,
+            topLeft = Offset(cx + r * 0.25f, currentCy - r * 0.22f), size = Size(r * 0.2f, r * 0.12f),
+            style = Stroke(3f)
+        )
+    } else {
+        drawCircle(Color.White, radius = r * 0.09f, center = Offset(cx - r * 0.35f, currentCy - r * 0.18f))
+        drawCircle(Color.White, radius = r * 0.09f, center = Offset(cx + r * 0.35f, currentCy - r * 0.18f))
+        drawCircle(Color.White, radius = r * 0.04f, center = Offset(cx - r * 0.32f, currentCy - r * 0.21f))
+        drawCircle(Color.White, radius = r * 0.04f, center = Offset(cx + r * 0.38f, currentCy - r * 0.21f))
+    }
+
+    // 7. Small black triangular nose
+    val nosePath = Path().apply {
+        moveTo(cx, currentCy - r * 0.05f)
+        lineTo(cx - r * 0.08f, currentCy - r * 0.11f)
+        lineTo(cx + r * 0.08f, currentCy - r * 0.11f)
+        close()
+    }
+    drawPath(nosePath, pandaBlack)
+
+    // 8. Pink cheeks
+    drawCircle(pandaPink.copy(alpha = 0.7f), radius = r * 0.12f, center = Offset(cx - r * 0.55f, currentCy - r * 0.02f))
+    drawCircle(pandaPink.copy(alpha = 0.7f), radius = r * 0.12f, center = Offset(cx + r * 0.55f, currentCy - r * 0.02f))
+
+    // 9. Mouth
+    drawArc(
+        color = pandaBlack, startAngle = 0f, sweepAngle = 180f, useCenter = false,
+        topLeft = Offset(cx - r * 0.08f, currentCy - r * 0.04f), size = Size(r * 0.16f, r * 0.1f),
+        style = Stroke(3f)
+    )
 }

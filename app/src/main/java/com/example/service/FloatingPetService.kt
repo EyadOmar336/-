@@ -102,6 +102,12 @@ class FloatingPetService : Service(), LifecycleOwner, ViewModelStoreOwner, Saved
     private var shortcutApp3 by mutableStateOf<String?>(null)
     private var isGameModeEnabled by mutableStateOf(true)
 
+    private var isCollaborativeActive by mutableStateOf(false)
+    private var collaborativePetId by mutableStateOf("panda")
+    private var companionSpeechText by mutableStateOf<String?>(null)
+    private var companionState by mutableStateOf(PetState.IDLE)
+    private var lastInteractionTriggerTime = 0L
+
     private var isDockExpanded by mutableStateOf(false)
 
     private var activeSpeechText by mutableStateOf<String?>(null)
@@ -154,8 +160,23 @@ class FloatingPetService : Service(), LifecycleOwner, ViewModelStoreOwner, Saved
                 shortcutApp2 = settings.shortcutApp2
                 shortcutApp3 = settings.shortcutApp3
                 isGameModeEnabled = settings.isGameModeEnabled
+                isCollaborativeActive = settings.isCollaborativeActive
+                collaborativePetId = settings.collaborativePetId
+
+                val incomingTime = settings.lastInteractionTimeMillis
+                if (lastInteractionTriggerTime == 0L) {
+                    lastInteractionTriggerTime = incomingTime
+                } else if (incomingTime > lastInteractionTriggerTime) {
+                    lastInteractionTriggerTime = incomingTime
+                    if (settings.isCollaborativeActive) {
+                        triggerCollaborativeInteraction(settings.lastInteractionScenario)
+                    }
+                }
 
                 updateWindowSize()
+                if (android.provider.Settings.canDrawOverlays(this@FloatingPetService) && composeView == null) {
+                    createOverlayWindow()
+                }
             }
         }
 
@@ -177,7 +198,7 @@ class FloatingPetService : Service(), LifecycleOwner, ViewModelStoreOwner, Saved
         val baseWidthPx = (baseSize.value * petSizeScale * density).toInt()
         val baseHeightPx = (baseSize.value * petSizeScale * density).toInt()
         
-        val finalWidthPx = if (isDockExpanded) (baseWidthPx * 1.6).toInt() else baseWidthPx
+        val finalWidthPx = if (isDockExpanded) (baseWidthPx * 1.6).toInt() else if (isCollaborativeActive) (baseWidthPx * 1.8).toInt() else baseWidthPx
         val finalHeightPx = if (isDockExpanded) (baseHeightPx * 1.6).toInt() else baseHeightPx
 
         layoutParams?.let { params ->
@@ -190,6 +211,12 @@ class FloatingPetService : Service(), LifecycleOwner, ViewModelStoreOwner, Saved
     }
 
     private fun createOverlayWindow() {
+        if (!android.provider.Settings.canDrawOverlays(this)) {
+            return
+        }
+        if (composeView != null) {
+            return
+        }
         val baseSize = 145.dp
         val density = resources.displayMetrics.density
         val finalSizePx = (baseSize.value * petSizeScale * density).toInt()
@@ -228,10 +255,10 @@ class FloatingPetService : Service(), LifecycleOwner, ViewModelStoreOwner, Saved
                 val density = resources.displayMetrics.density
                 val petSizePx = (petSizeDp.value * petSizeScale * density).toInt()
 
-                val petLeft = ((lp.width - petSizePx) / 2) - (15 * density).toInt()
-                val petRight = ((lp.width - petSizePx) / 2) + petSizePx + (15 * density).toInt()
-                val petTop = (lp.height - petSizePx) - (15 * density).toInt()
-                val petBottom = lp.height + (15 * density).toInt()
+                val petLeft = 0
+                val petRight = lp.width
+                val petTop = 0
+                val petBottom = lp.height
 
                 when (event.actionMasked) {
                     MotionEvent.ACTION_DOWN -> {
@@ -285,6 +312,9 @@ class FloatingPetService : Service(), LifecycleOwner, ViewModelStoreOwner, Saved
                                 isDockExpanded = !isDockExpanded
                                 updateWindowSize()
                                 triggerJumpInteraction()
+                                if (isCollaborativeActive) {
+                                    triggerCollaborativeInteraction()
+                                }
                             }
                             lastInteractionTime = System.currentTimeMillis()
                             isHandlingTouch = false
@@ -301,30 +331,39 @@ class FloatingPetService : Service(), LifecycleOwner, ViewModelStoreOwner, Saved
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    activeSpeechText?.let { text ->
+                    val speechToShow = when {
+                        activeSpeechText != null -> getPetEmojiName(selectedPetId) + ": " + activeSpeechText
+                        companionSpeechText != null -> getPetEmojiName(collaborativePetId) + ": " + companionSpeechText
+                        else -> null
+                    }
+
+                    speechToShow?.let { text ->
                         Card(
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
                                 .fillMaxWidth()
                                 .padding(horizontal = 6.dp)
                                 .offset(y = (-4).dp)
-                                .clickable { activeSpeechText = null },
+                                .clickable { 
+                                    activeSpeechText = null
+                                    companionSpeechText = null
+                                },
                             shape = RoundedCornerShape(12.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFF0F4FC),
+                                containerColor = Color(0xFFFFF9C4),
                                 contentColor = Color(0xFF1E293B)
                             ),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFFFF59D))
                         ) {
                             Text(
                                 text = text,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.ExtraBold,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 4.dp, horizontal = 6.dp),
-                                letterSpacing = 0.2.sp
+                                    .padding(vertical = 5.dp, horizontal = 8.dp)
                             )
                         }
                     }
@@ -369,12 +408,26 @@ class FloatingPetService : Service(), LifecycleOwner, ViewModelStoreOwner, Saved
                             }
                         }
 
-                        PetCanvas(
-                            characterId = selectedPetId,
-                            state = activePetState,
-                            modifier = Modifier.size(((if (activeSpeechText != null) 72.dp else 90.dp).value * petSizeScale).dp),
-                            tick = tickCount
-                        )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.Bottom
+                        ) {
+                            PetCanvas(
+                                characterId = selectedPetId,
+                                state = activePetState,
+                                modifier = Modifier.size(((if (activeSpeechText != null) 72.dp else 90.dp).value * petSizeScale).dp),
+                                tick = tickCount
+                            )
+
+                            if (isCollaborativeActive) {
+                                PetCanvas(
+                                    characterId = collaborativePetId,
+                                    state = if (activePetState == PetState.SLEEPING) PetState.SLEEPING else companionState,
+                                    modifier = Modifier.size(((if (activeSpeechText != null) 72.dp else 90.dp).value * petSizeScale).dp),
+                                    tick = tickCount + 15
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -776,5 +829,63 @@ class FloatingPetService : Service(), LifecycleOwner, ViewModelStoreOwner, Saved
         }
 
         super.onDestroy()
+    }
+
+    private fun getPetEmojiName(id: String): String {
+        return when (id.lowercase()) {
+            "mochi" -> "🐱 موتشي"
+            "astro" -> "👽 أسترو"
+            "kage" -> "🥷 كاجي"
+            "rex" -> "🦖 ريكس"
+            "panda" -> "🐼 الباندا"
+            else -> "🐾 رفيق"
+        }
+    }
+
+    private fun triggerCollaborativeInteraction(scenario: String? = null) {
+        if (!isCollaborativeActive) return
+        
+        lifecycleScope.launch(Dispatchers.Main) {
+            val plays = listOf(
+                // Index 0: hide & seek ("hide_seek")
+                listOf(
+                    Pair("هل تلعب معي الغميضة؟ سأغمض عيني وتحرك بسرعة! 🙈✨", "أجل! سأركض يميناً ويساراً، أتحداك أن تمسك بي! 🏃🏃"),
+                    Pair("أنت سريع ومرح جداً! ها قد أمسكتك يا رفيقي 🐾💖", "يا لك من بطل! اللعب معك يسعدني جداً! 🥰🎉")
+                ),
+                // Index 1: gift exchange ("gift")
+                listOf(
+                    Pair("تفضل! لقد أعددت لك سلة فواكه وهدية مميزة 🎁🍒", "وااو! علبة هدايا براقة! شكراً جزيلاً لك صديقي! 🎋💖"),
+                    Pair("تبادل الهدايا معك يقوي ويرسخ صداقتنا الرائعة 🌟", "بالتأكيد! دمت لي أفضل رفيق تفاعلي على الشاشة 🌸")
+                ),
+                // Index 2: study challenge ("study")
+                listOf(
+                    Pair("هيا نشارك في تحدي المذاكرة والتركيز الفوري الآن! 📚⏰", "أنا جاهز ومستعد! لنركز معاً بكل جد واجتهاد! 🧠💡"),
+                    Pair("رائع! دعنا نذاكر بتركيز تام ولا نتشتت عن عملنا ⏳🎯", "تحدي الاندماج نشط! من ينهي مهامه بجد أولاً؟ 📖🏆")
+                )
+            )
+            
+            val chosenScenario = when (scenario) {
+                "hide_seek" -> plays[0]
+                "gift" -> plays[1]
+                "study" -> plays[2]
+                else -> plays.random()
+            }
+            
+            companionState = PetState.JUMPING
+            activePetState = PetState.JUMPING
+            
+            for (turn in chosenScenario) {
+                activeSpeechText = turn.first
+                delay(3500)
+                
+                activeSpeechText = null
+                companionSpeechText = turn.second
+                companionState = PetState.WALKING
+                delay(3500)
+                
+                companionSpeechText = null
+            }
+            companionState = PetState.IDLE
+        }
     }
 }

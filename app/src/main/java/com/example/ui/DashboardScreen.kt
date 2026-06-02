@@ -27,6 +27,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.BorderStroke
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -220,6 +223,16 @@ fun DashboardScreen(
                             context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
                         }
                     }
+                )
+            }
+
+            // 5d. Collaborative Mode Multiplayer Deck
+            item {
+                CollaborativeModeDeck(
+                    settings = settingsState,
+                    onToggleCollaborative = { viewModel.toggleCollaborativeActive(it) },
+                    onSelectCollaborativePet = { viewModel.updateCollaborativePet(it) },
+                    onTriggerScenario = { viewModel.triggerCollaborativeScenario(it) }
                 )
             }
 
@@ -1274,5 +1287,293 @@ fun AppIconImage(packageName: String, modifier: Modifier = Modifier) {
             modifier = modifier,
             tint = MaterialTheme.colorScheme.primary
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CollaborativeModeDeck(
+    settings: PetSettings,
+    onToggleCollaborative: (Boolean) -> Unit,
+    onSelectCollaborativePet: (String) -> Unit,
+    onTriggerScenario: (String) -> Unit
+) {
+    var searchInput by remember { mutableStateOf("") }
+    var isSearching by remember { mutableStateOf(false) }
+    var searchResultConnected by remember { mutableStateOf(settings.isCollaborativeActive) }
+    val scope = rememberCoroutineScope()
+
+    // Sync state with setting
+    LaunchedEffect(settings.isCollaborativeActive) {
+        searchResultConnected = settings.isCollaborativeActive
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            // Header with Icon and Toggle Switch
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "الوضع التعاوني المتعدد Multiplayer 🤝✨",
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 15.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Switch(
+                    checked = settings.isCollaborativeActive,
+                    onCheckedChange = { active ->
+                        onToggleCollaborative(active)
+                        if (!active) {
+                            searchResultConnected = false
+                        }
+                    }
+                )
+            }
+
+            Text(
+                text = "استدعِ مساعد صديقك ليتجول ويتفاعل مباشرة مع مساعدك على شاشة هاتفك! يمكنهما اللعب، تبادل الهدايا، والمشاركة في تحديات التركيز المشتركة.",
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 15.sp
+            )
+
+            if (settings.isCollaborativeActive) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+
+                // Find Friend bar "ابحث عن صديق للمشاركة"
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "ابحث عن صديق للمشاركة 📡",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = searchInput,
+                            onValueChange = { searchInput = it },
+                            placeholder = { 
+                                Text("أدخل رمز صديقك (مثال: SH-8392)", fontSize = 11.sp) 
+                            },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            shape = RoundedCornerShape(10.dp),
+                            leadingIcon = {
+                                Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(16.dp))
+                            }
+                        )
+
+                        Button(
+                            onClick = {
+                                isSearching = true
+                                scope.launch {
+                                    delay(2000)
+                                    isSearching = false
+                                    searchResultConnected = true
+                                    onSelectCollaborativePet("panda") // Default to panda
+                                }
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            enabled = !isSearching,
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)
+                        ) {
+                            if (isSearching) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text("ابحث", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            }
+                        }
+                    }
+
+                    // Radar pulse search animation or Connected Success message
+                    if (isSearching) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(60.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "جاري تتبع الاتصال المشترك عبر الرادار... 🛰️",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    } else if (searchResultConnected) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFE8F5E9)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = Color(0xFF2E7D32),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Column {
+                                    Text(
+                                        text = "تم الاتصال بنجاح مع رفيق صديقك! 🟢",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp,
+                                        color = Color(0xFF2E7D32)
+                                    )
+                                    Text(
+                                        text = "المساعد الأليف الإضافي يعيش على شاشتك الآن.",
+                                        fontSize = 10.sp,
+                                        color = Color(0xFF558B2F)
+                                    )
+                                }
+                            }
+                        }
+
+                        // Select companion pet to display
+                        Text(
+                            text = "اختر رفيق صديقك المستدعى 🐾",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+
+                        val friends = listOf(
+                            Pair("panda", "الباندا النشيط 🐼"),
+                            Pair("astro", "أسترو الفضائي 👽"),
+                            Pair("rex", "ريكس الصغير 🦖"),
+                            Pair("kage", "كاجي النينجا 🥷")
+                        )
+
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(friends) { (id, name) ->
+                                val isSelected = settings.collaborativePetId == id
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(
+                                            if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                        )
+                                        .border(
+                                            width = if (isSelected) 2.dp else 1.dp,
+                                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .clickable { onSelectCollaborativePet(id) }
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = name,
+                                            fontSize = 11.sp,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Play Scenarios / Challenges
+                        Text(
+                            text = "تحديات ثنائية ممتعة ونشاطات مشتعلة! 🔥🏆",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = {
+                                    onTriggerScenario("gift")
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFFFECEF),
+                                    contentColor = Color(0xFFD81B60)
+                                ),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text("تبادل هدايا 🎁", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+
+                            Button(
+                                onClick = {
+                                    onTriggerScenario("study")
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFE8F5E9),
+                                    contentColor = Color(0xFF1B5E20)
+                                ),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text("تحدي المذاكرة 📖", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+
+                            Button(
+                                onClick = {
+                                    onTriggerScenario("hide_seek")
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFE3F2FD),
+                                    contentColor = Color(0xFF0D47A1)
+                                ),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text("لعب الغميضة 🎮", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

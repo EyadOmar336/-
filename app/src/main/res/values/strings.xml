@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">المساعد الحيّ</string>
+    <string name="permission_required_title">إذن الظهور فوق التطبيقات الرياضيّ</string>
+    <string name="permission_required_desc">لتتمكن الشخصية من اللعب والتجوّل على شاشتك فوق بقية التطبيقات، يرجى تفعيل إذن \"الظهور فوق التطبيقات الأخرى\".</string>
+    <string name="grant_permission_btn">تفعيل الإذن الآن</string>
+    <string name="pet_state_active">مساعد الهاتف نشط الآن!</string>
+    <string name="pet_state_inactive">مساعد الهاتف نائم/معطل.</string>
+    <string name="activate_pet_btn">إطلاق المساعد على الشاشة 🚀</string>
+    <string name="deactivate_pet_btn">إعادة المساعد للمنزل 🏠</string>
+    <string name="choose_pet_title">اختر رفيقك الصغير</string>
+    <string name="pet_mochi_name">موتشي الكيوت (قطة)</string>
+    <string name="pet_mochi_desc">قطة بيضاء لطيفة تُحب شرب الماء، والتسلق، وتذكيرك بأخذ قسط من الراحة والاسترخاء.</string>
+    <string name="pet_astro_name">أسترو العائم (رائد فضاء)</string>
+    <string name="pet_astro_desc">رائد فضاء صغير يسبح في شاشتك كأنه في الفضاء الخارجي، يذكرك بالتأمل والهدوء بين الفينة والأخرى.</string>
+    <string name="pet_kage_name">كاجي الشبح (نينجا)</string>
+    <string name="pet_kage_desc">شخصية نينجا بهلوانية تقوم بحركات رشيقة وتتسلق الحواف بسرعة، وتذكرك دائماً بالتركيز وهدوء الأعصاب.</string>
+    <string name="pet_rex_name">ثور ريكس (ديناصور)</string>
+    <string name="pet_rex_desc">ديناصور صغير لطيف يعشق المشي الهادئ والاستلقاء، وسيخبرك بمعلومات طريفة ونكت خفيفة تسليك!</string>
+    <string name="size_control_label">حجم المساعد: %s</string>
+    <string name="speed_control_label">سرعة الحركة: %s</string>
+    <string name="frequency_label">تكرار فقاعات التحدث (التذكيرات)</string>
+    <string name="freq_very_high">كل دقيقة (تفاعل سريع)</string>
+    <string name="freq_high">كل 5 دقائق</string>
+    <string name="freq_medium">كل 15 دقيقة</string>
+    <string name="freq_low">كل 30 دقيقة</string>
+    <string name="freq_off">منطفأ (بدون كلام)</string>
+    <string name="battery_saver_title">موفر الطاقة الذكي (السكون التلقائي)</string>
+    <string name="battery_saver_desc">تنام الشخصية تلقائياً وتتوقف عن الحركة وتوفير المعالج عند عدم لمس الشاشة لمدة 15 ثانية.</string>
+    <string name="reminders_section_title">التذكيرات المبتكرة والمخصصة</string>
+    <string name="add_reminder_placeholder">أدخل تذكيراً مخصصاً جديداً (مثال: تنفس بعمق!)</string>
+    <string name="add_btn">إضافة</string>
+    <string name="reminders_list_empty">لا توجد تذكيرات مخصصة. أضف تذكيراً لتقوله الشخصية كفقاعة كلامية!</string>
+    <string name="test_inside_title">ملعب تجربة المساعد المصغّر (التدريب)</string>
+    <string name="test_inside_desc">قم بالنقر أو السحب لتجربة حركة وتفاعل رفيقك الكيوت هنا قبل تفعيله على كامل الهاتف!</string>
+    <string name="tip_drag_drop">اسحب الشخصية والعب معها هنا!</string>
+</resources>

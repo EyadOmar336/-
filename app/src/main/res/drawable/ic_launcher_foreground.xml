@@ -1,0 +1,89 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Outer decorative circle/glow -->
+    <path
+        android:fillColor="#ffffff"
+        android:pathData="M54,18 A36,36 0 1 1 53.9,18 Z"
+        android:alpha="0.15" />
+        
+    <!-- Left Ear -->
+    <path
+        android:fillColor="#FFF7F0"
+        android:pathData="M 33,48 L 22,24 L 46,38 Z" />
+    <!-- Left Inner Ear -->
+    <path
+        android:fillColor="#FFC0D9"
+        android:pathData="M 34,44 L 26,29 L 41,38 Z" />
+
+    <!-- Right Ear -->
+    <path
+        android:fillColor="#FFF7F0"
+        android:pathData="M 75,48 L 86,24 L 62,38 Z" />
+    <!-- Right Inner Ear -->
+    <path
+        android:fillColor="#FFC0D9"
+        android:pathData="M 74,44 L 82,29 L 67,38 Z" />
+
+    <!-- Cat Main Head Face Capsule -->
+    <path
+        android:fillColor="#FFF7F0"
+        android:pathData="M 54,34 C 71,34 84,43 84,58 C 84,73 71,82 54,82 C 37,82 24,73 24,58 C 24,43 37,34 54,34 Z" />
+
+    <!-- Rosy Cheek Left -->
+    <path
+        android:fillColor="#FFCDD2"
+        android:pathData="M31,64 A5,4 0 1 1 30.9,64 Z" />
+    <!-- Rosy Cheek Right -->
+    <path
+        android:fillColor="#FFCDD2"
+        android:pathData="M77,64 A5,4 0 1 1 76.9,64 Z" />
+
+    <!-- Smiling Eye Left (cute arc) -->
+    <path
+        android:strokeColor="#37474F"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M36,54 Q41,47 46,54" />
+
+    <!-- Smiling Eye Right (cute arc) -->
+    <path
+        android:strokeColor="#37474F"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M62,54 Q67,47 72,54" />
+
+    <!-- Heart Nose -->
+    <path
+        android:fillColor="#E26EE5"
+        android:pathData="M54,59 L51,56 C49,54 48,52 50,50 C52,48 54,51 54,51 C54,51 56,48 58,50 C60,52 59,54 57,56 Z" />
+
+    <!-- Sleepy Cat Whiskers -->
+    <!-- Left whiskers -->
+    <path
+        android:strokeColor="#B0BEC5"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M18,59 L29,59" />
+    <path
+        android:strokeColor="#B0BEC5"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M16,66 L27,64" />
+
+    <!-- Right whiskers -->
+    <path
+        android:strokeColor="#B0BEC5"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M79,59 L90,59" />
+    <path
+        android:strokeColor="#B0BEC5"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M81,64 L92,66" />
+
+</vector>
